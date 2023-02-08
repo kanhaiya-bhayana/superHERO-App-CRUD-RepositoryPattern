@@ -21,37 +21,46 @@
                 }
 
             };
-        public List<SuperHero> AddHero(SuperHero objSuperHero)
+
+        private readonly DataContext _context;
+        public SuperHeroService(DataContext context) 
         {
-            superHeros.Add(objSuperHero);
-            return superHeros;
+            _context = context;
+        }
+        public async Task<List<SuperHero>> AddHero(SuperHero objSuperHero)
+        {
+            _context.SuperHeroes.Add(objSuperHero);
+            await _context.SaveChangesAsync();
+            return await _context.SuperHeroes.ToListAsync();
         }
 
-        public List<SuperHero>? DeleteHero(int id)
+        public async Task<List<SuperHero>?> DeleteHero(int id)
         {
-            var hero = superHeros.Find(x => x.Id == id);
+            var hero = await _context.SuperHeroes.FindAsync(id);
             if (hero is null)
                 return null;
-            superHeros.Remove(hero);
-            return superHeros;
+            _context.SuperHeroes.Remove(hero);
+            await _context.SaveChangesAsync();
+            return await _context.SuperHeroes.ToListAsync();
         }
 
-        public List<SuperHero> GetAllSuperHeros()
+        public async Task<List<SuperHero>> GetAllSuperHeros()
         {
-            return superHeros;
+            var heroes = await _context.SuperHeroes.ToListAsync();
+            return heroes;
         }
 
-        public SuperHero? GetSingleHero(int id)
+        public async Task<SuperHero?> GetSingleHero(int id)
         {
-            var hero = superHeros.Find(x => x.Id == id);
+            var hero = await _context.SuperHeroes.FindAsync(id);
             if (hero is null)
                 return null;
             return hero;
         }
 
-        public List<SuperHero>? UpdateHero(int id, SuperHero request)
+        public async Task<List<SuperHero>?> UpdateHero(int id, SuperHero request)
         {
-            var hero = superHeros.Find(x => x.Id == id);
+            var hero = await _context.SuperHeroes.FindAsync(id);
             if (hero is null)
                 return null;
             hero.Name = request.Name;
@@ -59,7 +68,14 @@
             hero.LastName = request.LastName;
             hero.Place = request.Place;
 
-            return superHeros;
+            await _context.SaveChangesAsync();
+
+            return await _context.SuperHeroes.ToListAsync() ;
+        }
+
+        public static implicit operator SuperHeroService(DbContext v)
+        {
+            throw new NotImplementedException();
         }
     }
 }
